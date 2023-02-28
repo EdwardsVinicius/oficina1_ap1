@@ -1,9 +1,5 @@
 import csv
-
-with open('data_set.csv', newline='') as csvfile:
-    reader = csv.DictReader(csvfile)
-    for row in reader:
-        print(row['name'])
+import json
 
 
 def pearson(rating1, rating2):
@@ -51,7 +47,7 @@ def manhattan(rating1, rating2):
     commonRatings = False
     for key in rating1:
         if key in rating2:
-            distance  = abs(rating1[key] - rating2[key])
+            distance  = abs(rating1['ratings'] - rating2['ratings'])
             commonRatings = True
     if commonRatings:
         return distance
@@ -59,34 +55,52 @@ def manhattan(rating1, rating2):
         return -1  #Indicates no ratings in common
 
 
-def computeNearestNeighbor(username, users):
+def computeNearestNeighbor(username, reader):
     """creates a sorted list of users based on their distance to username"""
     distances = []
-    for user in users:
-        if user != username:
-            distance = manhattan(users[user], users[username])
-            distances.append((distance, user))
+    for row in reader:
+        if row['name'] != username:
+            distance = manhattan(row, user_row)
+            distances.append((distance, row))
     # sort based on distance -- closest first
     distances.sort()
     return distances
 
 
-def recommend(username, users):
+def recommend(username, reader):
     """Give list of recommendations"""
     # first find nearest neighbor
-    nearest = computeNearestNeighbor(username, users)[0][1]
+    username
+    nearest = computeNearestNeighbor(username, reader)[0][1]
 
     recommendations = []
     # now find bands neighbor rated that user didn't
-    neighborRatings = users[nearest]
-    userRatings = users[username]
-    for artist in neighborRatings:
-        if not artist in userRatings:
-            recommendations.append((artist, neighborRatings[artist]))
+    neighborRatings = reader[nearest]
+    userRatings = reader[username]
+    for movie in neighborRatings:
+        if not movie in userRatings:
+            recommendations.append((movie, neighborRatings[movie]))
     # using the fn sorted for variety - sort is more efficient
     return sorted(recommendations,
-                  key=lambda artistTuple: artistTuple[1],
+                  key=lambda movieTuple: movieTuple[1],
                   reverse=True)
 
 
-print(recommend('Vivia Denisyev', reader))
+# with open('data_set.csv', newline='') as csvfile:
+#     reader = csv.DictReader(csvfile)
+#     for row in reader:
+#         print(row)
+    # print(recommend('Vivia Denisyev', reader))
+
+username = ''
+user_row = ''
+
+file = open('ratings.json')
+data = json.load(file)
+for i in data:
+    if (i['name'] == username):
+        user_row = i['name']
+    print(i)
+
+print(recommend(username, data))
+file.close()
